@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Property Assessment Winnipeg</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAFEvOv8MRs1D1Twp6rBe_REpAZrUemhAM&libraries=visualization"></script>
+  <style>
+    #map {
+      height: 100%;
+    }
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    #floating-panel {
+      display: flex;
+      position: absolute;
+      top: 10px;
+      left: 35%;
+      z-index: 5;
+      text-align: center;
+    }
+    .group {
+      border: 1px solid #999;
+      border-radius: 3px;
+      margin: 5px;
+      padding: 5px;
+      line-height: 25px;
+      background-color: white;
+      font-family: 'Roboto','sans-serif';
+      font-size: small;
+    }
+
+    #radiusNum, #intensityNum, #opacityNum {
+      font-weight: 800;
+    }
+  </style>
+</head>
+<body>
+      <div id="map"></div>
+<script>
+  const maxI = 125, rad = 12, opac = .6;
+  var map, heatmap;
+
+  var colours = [
+    'rgb(0, 39, 54)',
+    'rgb(26, 79, 129)',
+    'rgb(0, 165, 210)',
+    'rgb(0, 220, 203)',
+    'rgb(215, 215, 1)',
+    'rgb(239, 108, 51)',
+    'rgb(154, 38, 30)',
+    'rgb(62, 9, 6)'
+  ];
+
+  function valueToColour(value) {
+    if (value < 225000) {
+      return colours[0];
+    } else if (value < 274000) {
+      return colours[1];
+    } else if (value < 305000) {
+      return colours[2];
+    } else if (value < 322000) {
+      return colours[3];
+    } else if (value < 338000) {
+      return colours[4];
+    } else if (value < 370000) {
+      return colours[5];
+    } else if (value < 418000) {
+      return colours[6];
+    } else {
+      return colours[7];
+    }
+  }
+
+  function initMap() {
+    map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 15,
+
+      center: {lat: 49.861278, lng: -97.150948},
+      mapTypeId: 'roadmap',
+      styles: [
+  {
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#242f3e"
+      }
+    ]
+  },
+  {
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#746855"
+      }
+    ]
+  },
+  {
+    "elementType": "labels.text.stroke",
+    "stylers": [
+      {
+        "color": "#242f3e"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "administrative.locality",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#d59563"
+      }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "poi",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#d59563"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#263c3f"
+      }
+    ]
+  },
+  {
+    "featureType": "poi.park",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#6b9a76"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#38414e"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "color": "#212a37"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "labels.icon",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "road",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#9ca5b3"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#746855"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "geometry.stroke",
+    "stylers": [
+      {
+        "color": "#1f2835"
+      }
+    ]
+  },
+  {
+    "featureType": "road.highway",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#f3d19c"
+      }
+    ]
+  },
+  {
+    "featureType": "transit",
+    "stylers": [
+      {
+        "visibility": "off"
+      }
+    ]
+  },
+  {
+    "featureType": "transit",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#2f3948"
+      }
+    ]
+  },
+  {
+    "featureType": "transit.station",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#d59563"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "geometry",
+    "stylers": [
+      {
+        "color": "#17263c"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "labels.text.fill",
+    "stylers": [
+      {
+        "color": "#515c6d"
+      }
+    ]
+  },
+  {
+    "featureType": "water",
+    "elementType": "labels.text.stroke",
+    "stylers": [
+      {
+        "color": "#17263c"
+      }
+    ]
+  }
+]
+    });
+    fetch('https://data.winnipeg.ca/resource/94a6-v8ue.json?$where=property_use_code=%22RESSD%20-%20DETACHD%20SNGL%20DWELLNG%22%20AND%20total_assessed_value%20%3E%200%20AND%20within_box(location,49.85,-97.190,49.87,-97.097)&$select=total_assessed_value,location&$limit=200000').then(function(response) {
+      response.json().then(function(results) {
+
+        var boxed = results.filter(val => {
+          return val.location;
+/*          var lat = val.location.coordinates[1];
+          var lng = val.location.coordinates[0];
+          return (lat > 49.849) && (lat < 49.881) && (lng > -97.190) && (lng < -97.097);*/
+        });
+
+        for(var i = 0; i < boxed.length; i++) {
+          var val = boxed[i];
+          var colorScale = Math.floor(colours.length * val.total_assessed_value / 2000000);
+          //console.log(val.total_assessed_value + " : " + colorScale);
+          marker = new google.maps.Marker({
+            position: new google.maps.LatLng(val.location.coordinates[1], val.location.coordinates[0]),
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: 2,
+              strokeColor: valueToColour(val.total_assessed_value),
+              fillColor: valueToColour(val.total_assessed_value),
+              fillOpacity: 1
+            },
+            map: map
+          });
+        }
+      });
+    });
+  }
+/*
+  // Function to change the radius of data points on heatmap
+  function changeRadius(bool) {
+    const step = 3, min = 0, max = 50;
+    let current = heatmap.get('radius');
+    let newValue = toggleUpDown(bool, current, step, min, max);
+    heatmap.set('radius', newValue);
+    document.getElementById("radiusNum").innerText = newValue;
+  };
+
+  // Function to change the opacity of the heatmap
+  function changeOpacity(bool) {
+    const step = .2, min = 0, max = 1;
+    let current = heatmap.get('opacity');
+    let newValue = toggleUpDown(bool, current, step, min, max);
+    let rounded = round(newValue, 1);
+    heatmap.set('opacity', rounded);
+    document.getElementById("opacityNum").innerText = rounded;
+  }
+
+  // Function to change maxIntensity of the heatmap
+  function changeIntensity(bool) {
+    const step = 25, min = 0, max = 1000;
+    let current = heatmap.get('maxIntensity');
+    let newValue = toggleUpDown(bool, current, step, min, max);
+    heatmap.set('maxIntensity', newValue);
+    document.getElementById("intensityNum").innerText = newValue;
+  };
+
+  // Changes our toggle values and keeps them within our min/max values
+  function toggleUpDown(bool, current, step, min, max){
+    if (bool && current >= max) return current;
+    if (!bool && current <= min) return current;
+    if (bool) return current + step;
+    return current - step;
+  }
+
+  // Used to round the opacity toggle to one decimal place
+  function round(value, precision) {
+    var multiplier = Math.pow(10, precision || 0);
+    return Math.round(value * multiplier) / multiplier;
+  }
+
+  document.querySelector("#radiusUp").addEventListener('click', function() { changeRadius(true); });
+  document.querySelector("#radiusDown").addEventListener('click', function() { changeRadius(false); });
+  document.querySelector("#intensityUp").addEventListener('click', function() { changeIntensity(true); });
+  document.querySelector("#intensityDown").addEventListener('click', function() { changeIntensity(false); });
+  document.querySelector("#opacityUp").addEventListener('click', function() { changeOpacity(true); });
+  document.querySelector("#opacityDown").addEventListener('click', function() { changeOpacity(false); });
+*/
+  initMap();
+</script>
+</body>
+</html>
